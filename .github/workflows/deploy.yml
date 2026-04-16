@@ -1,4 +1,4 @@
-name: Aitech-CD-Pipeline
+name: Aitech-Final-Task-Pipeline
 
 on:
   push:
@@ -8,22 +8,30 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy via SSH
+      - name: SSH and Deploy to EC2
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            # 1. Clean up old folder if it exists
+            # 1. Update and Install Git/Docker if missing
+            sudo apt update -y
+            sudo apt install git docker.io -y
+
+            # 2. Old folder-ah delete panni fresh-a start panna
             sudo rm -rf ~/aitech-final-task
-            
-            # 2. Clone the fresh repo (using Public URL)
-            git clone https://github.com/YOUR_GITHUB_USERNAME/aitech-final-task.git ~/aitech-final-task
+
+            # 3. Unga repo-va clone panradhu
+            git clone https://github.com/poorna942-glitch/aitech-final-task.git ~/aitech-final-task
             cd ~/aitech-final-task
 
-            # 3. Build and Restart Container
-            sudo docker build -t aitech-app .
+            # 4. Docker Build and Run
+            sudo docker build -t aitech-final-app .
+            
+            # Pazhaya container-ah stop panni remove pannu (error varaama irukka)
             sudo docker stop aitech-container || true
             sudo docker rm aitech-container || true
-            sudo docker run -d -p 80:80 --name aitech-container aitech-app
+            
+            # Puthiya container-ah launch pannu
+            sudo docker run -d -p 80:80 --name aitech-container aitech-final-app
