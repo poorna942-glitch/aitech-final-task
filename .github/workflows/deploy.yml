@@ -1,0 +1,29 @@
+name: Aitech-CD-Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # 1. Clean up old folder if it exists
+            sudo rm -rf ~/aitech-final-task
+            
+            # 2. Clone the fresh repo (using Public URL)
+            git clone https://github.com/YOUR_GITHUB_USERNAME/aitech-final-task.git ~/aitech-final-task
+            cd ~/aitech-final-task
+
+            # 3. Build and Restart Container
+            sudo docker build -t aitech-app .
+            sudo docker stop aitech-container || true
+            sudo docker rm aitech-container || true
+            sudo docker run -d -p 80:80 --name aitech-container aitech-app
